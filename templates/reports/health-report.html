@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Health Report - {{ client.name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 24px; color: #111; }
+        h1 { margin-bottom: 0; }
+        .meta { color: #555; margin-bottom: 12px; }
+        .cards { display: flex; gap: 16px; margin: 16px 0; }
+        .card { border: 1px solid #ddd; border-radius: 6px; padding: 12px; flex: 1; background: #fafafa; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+        .healthy { color: green; }
+        .warning { color: #c77d00; }
+        .critical { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Health Report</h1>
+    <div class="meta">
+        Client: <strong>{{ client.name }}</strong><br/>
+        Generated: {{ generated_at }}<br/>
+        Period: {{ report_period }}
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <div>Total Checks</div>
+            <div style="font-size: 28px;">{{ health_summary.total_checks | default(0) }}</div>
+        </div>
+        <div class="card">
+            <div>Healthy</div>
+            <div style="font-size: 28px;" class="healthy">{{ health_summary.healthy | default(0) }}</div>
+        </div>
+        <div class="card">
+            <div>Warnings</div>
+            <div style="font-size: 28px;" class="warning">{{ health_summary.warnings | default(0) }}</div>
+        </div>
+        <div class="card">
+            <div>Critical</div>
+            <div style="font-size: 28px;" class="critical">{{ health_summary.critical | default(0) }}</div>
+        </div>
+    </div>
+
+    <h2>Recent Checks</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Check Type</th>
+                <th>Status</th>
+                <th>Value</th>
+                <th>Threshold</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for check in recent_checks %}
+            <tr>
+                <td>{{ check.timestamp }}</td>
+                <td>{{ check.check_type }}</td>
+                <td class="{{ check.status }}">{{ check.status }}</td>
+                <td>{{ check.value | default('') }}</td>
+                <td>{{ check.threshold | default('') }}</td>
+                <td>{{ check.message }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No recent checks.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Alerts</h2>
+    {% if alerts and alerts|length > 0 %}
+        <ul>
+        {% for alert in alerts %}
+            <li>[{{ alert.severity|upper }}] {{ alert.message }} ({{ alert.created_at }})</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No alerts recorded.</p>
+    {% endif %}
+
+    <h2>Tickets</h2>
+    {% if tickets and tickets|length > 0 %}
+        <ul>
+        {% for ticket in tickets %}
+            <li>{{ ticket.id }} - {{ ticket.status }} - {{ ticket.summary }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tickets recorded.</p>
+    {% endif %}
+</body>
+</html>
